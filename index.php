@@ -11,6 +11,9 @@ canvas.height = window.innerHeight*0.97;
 <script>
 	var canvas = new fabric.Canvas('c');
 
+	//setting up a way to get the previous position of a fabric object (previous frame)
+	fabric.Object.prototype.prevX = 0;
+	fabric.Object.prototype.prevY = 0;
 	
 	var points = [
 		{x: 10, y: 10},
@@ -22,6 +25,8 @@ canvas.height = window.innerHeight*0.97;
 		{x: 510, y: 510},
 		{x: 510, y: 10},
 		]
+
+
 	var room = new fabric.Polygon(points, {
 		left: 100,
 		top: 50,
@@ -38,35 +43,60 @@ var rectangle = new fabric.Rect({
 	opacity: 1,
 	left: 180,
 	top: 180,
-	height: 500,
-	width: 500
+	height: 20,
+	width: 20
 });
 
-var bedsideTable = new fabric.Rect({
-	fill:'red',
-	left:200,
-	top:500,
-	height:50,
-	width:50
-});
 
-canvas.add(room, bedsideTable);
+
+
+
+canvas.add(room, rectangle);
+
+//a little hacky, but this object holds the mouse pointer position of both the current frame and the previous frame
+var mouseData = {prevX:0,prevY0:0, currentX:0, currentY:0, velocityX:0, velocityY:0};
 
 //code to check for changes, can add more situations in which to call the onChange function
 canvas.on({
-	'object:moving' : onChange
+	'object:moving' : onChange,
+	'mouse:move' : mouseUpdater
 });
 
+function mouseUpdater(options) {
+	mouseData.prevX = mouseData.currentX;
+	mouseData.prevY = mouseData.currentY;
+	mouseData.currentX = options.e.layerX;
+	mouseData.currentY = options.e.layerY;
+	mouseData.velocityX = mouseData.currentX-mouseData.prevX;
+	mouseData.velocityY = mouseData.currentY-mouseData.prevY;
+}
+
 function onChange(options) {
+
+	
+	// sends positions on the backend
+	send()
+
 	options.target.setCoords();
+
+	//currently, this function only houses collision code
 	canvas.forEachObject(function(obj) {
-		//prevents the object from unnecessarily checking collisions with itself
-		if (obj == options.target) return;
+		
 		if (options.target.intersectsWithObject(obj)) {
-					 //placeholder code, will put unintersecting here
-			alert("there was a collision")
-		}
+
+			if (obj === options.target) return;
+
+			options.target.setLeft(options.target.prevX);
+			options.target.setTop(options.target.prevY);
+			options.target.setCoords();
+		} 
+		
+
 	});
+
+	options.target.prevX = options.target.getLeft();
+	options.target.prevY = options.target.getTop();
+
 }
 
 canvas.renderAll();
