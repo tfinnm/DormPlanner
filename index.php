@@ -42,7 +42,33 @@ var rectangle = new fabric.Rect({
 	width: 500
 });
 
-canvas.add(room);
+var bedsideTable = new fabric.Rect({
+	fill:'red',
+	left:200,
+	top:500,
+	height:50,
+	width:50
+});
+
+canvas.add(room, bedsideTable);
+
+//code to check for changes, can add more situations in which to call the onChange function
+canvas.on({
+	'object:moving' : onChange
+});
+
+function onChange(options) {
+	options.target.setCoords();
+	canvas.forEachObject(function(obj) {
+		//prevents the object from unnecessarily checking collisions with itself
+		if (obj == options.target) return;
+		if (options.target.intersectsWithObject(obj)) {
+					 //placeholder code, will put unintersecting here
+			alert("there was a collision")
+		}
+	});
+}
+
 canvas.renderAll();
 
 //update
