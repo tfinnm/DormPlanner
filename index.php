@@ -27,13 +27,50 @@ canvas.height = window.innerHeight*0.97;
 		]
 
 
-	var room = new fabric.Polygon(points, {
-		left: 100,
-		top: 50,
-		fill: 'white',
-		strokeWidth: 10,
-		stroke: 'black',
-	});
+	//generates a list of rectangles that together form the shape of the room/floorplan
+	function makeRoom(points) {
+		
+		var roomRects = [];
+
+		for(let i = 0; i < points.length-1; i++) {
+			let wallRect = new fabric.Rect({selectable: false, fill: 'black', originX:'center', originY:'center', height: 10, width:25, left:(points[i].x), top:(points[i].y)});
+			let xDiff = (points[i+1].x - points[i].x)
+			let yDiff = (points[i+1].y - points[i].y)
+			let angle = Math.atan2(yDiff,xDiff)*(180/Math.PI);
+			let rectWidth = Math.sqrt(yDiff*yDiff + xDiff*xDiff);
+
+			wallRect.setAngle(angle);
+			wallRect.setOriginX('left');
+			wallRect.setWidth(rectWidth);
+			wallRect.setCoords();
+			roomRects.push(wallRect);
+		}
+
+		//close off the top of the room
+		let wallRect = new fabric.Rect({selectable: false, fill: 'black', originX:'center', originY:'center', height: 10, width:25, left:(points[points.length-1].x), top:(points[points.length-1].y)});
+		let xDiff = (points[0].x - points[points.length-1].x)
+		let yDiff = (points[0].y - points[points.length-1].y)
+		let angle = Math.atan2(yDiff,xDiff)*(180/Math.PI);
+		let rectWidth = Math.sqrt(yDiff*yDiff + xDiff*xDiff);
+
+		wallRect.setAngle(angle);
+		wallRect.setOriginX('left');
+		wallRect.setWidth(rectWidth);
+		wallRect.setCoords();
+		roomRects.push(wallRect);
+		return roomRects;
+	}
+
+	var room = makeRoom(points);
+
+	// var room = new fabric.Polygon(points, {
+	// 	left: 100,
+	// 	top: 50,
+	// 	fill: 'white',
+	// 	strokeWidth: 10,
+	// 	stroke: 'black',
+	// });
+
 var rectangle = new fabric.Rect({
 	stroke: 'black', 
 	strokeWidth: 10,
@@ -41,8 +78,8 @@ var rectangle = new fabric.Rect({
 	originX: 'center',
 	originY: 'center',
 	opacity: 1,
-	left: 180,
-	top: 180,
+	left: 100,
+	top: 100,
 	height: 20,
 	width: 20
 });
@@ -51,7 +88,12 @@ var rectangle = new fabric.Rect({
 
 
 
-canvas.add(room, rectangle);
+canvas.add(rectangle);
+
+//the room is an array of rectangles, so we have to loop through and render them all
+room.forEach(wall => {
+	canvas.add(wall);
+})
 
 //a little hacky, but this object holds the mouse pointer position of both the current frame and the previous frame
 var mouseData = {prevX:0,prevY0:0, currentX:0, currentY:0, velocityX:0, velocityY:0};
@@ -89,10 +131,12 @@ function onChange(options) {
 			options.target.setLeft(options.target.prevX);
 			options.target.setTop(options.target.prevY);
 			options.target.setCoords();
+
 		} 
 		
 
 	});
+
 
 	options.target.prevX = options.target.getLeft();
 	options.target.prevY = options.target.getTop();
