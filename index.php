@@ -44,6 +44,19 @@ var rectangle = new fabric.Rect({
 
 canvas.add(room);
 canvas.renderAll();
+
+//update
+if(typeof(EventSource) !== 'undefined') {
+	var source = new EventSource('back/check4update.php?room=<?php echo "TEST" ?>');
+	source.onmessage = function(event) {
+		var ajax = new XMLHttpRequest();
+		ajax.open('POST', 'back/getupdate.php');
+		ajax.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+		ajax.send('data='+JSON.stringify(canvas));
+	};
+} else {
+	alert("Browser Not Supported :(");
+}
 </script>
 
 </html>
