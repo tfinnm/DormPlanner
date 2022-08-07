@@ -26,16 +26,22 @@ canvas.height = window.innerHeight*0.97;
 		{x: 10, y: 10},
 		{x: 10, y: 385},
 		{x: 385, y: 385},
-		{x: 10, y: 385},
+		{x: 385, y: 10},
 		]
 
 
 	//generates a list of rectangles that together form the shape of the room/floorplan
 	function makeRoom(points) {
+
+		for(let i = 0; i < points.length; i++) {
+			points[i].x = feetToPixels(points[i.x]);
+			points[i].y = feetToPixels(points[i.y]);
+		}
 		
 		var roomRects = [];
 
 		for(let i = 0; i < points.length-1; i++) {
+
 			let wallRect = new fabric.Rect({selectable: false, fill: 'black', originX:'center', originY:'center', height: 10, width:25, left:(points[i].x), top:(points[i].y)});
 			let xDiff = (points[i+1].x - points[i].x)
 			let yDiff = (points[i+1].y - points[i].y)
@@ -96,9 +102,14 @@ canvas.height = window.innerHeight*0.97;
 
 //delete the actively selected object when the delete key is pressed
 function deleteSelected() {
-	canvas.remove(canvas.getActiveObject())
-	canvas.renderAll()
-	console.log("triggered correctly")
+	canvas.remove(canvas.getActiveObject());
+	canvas.renderAll();
+	console.log("triggered correctly");
+}
+
+//converting feet to pixel values
+function feetToPixels(feet) {
+	return Math.floor(feet*37)
 }
 
 //draw all the added furniture
@@ -122,7 +133,7 @@ canvas.on({
 
 //for adding new pieces of furniture from the GUI
 function newFurniture() {
-	var newItem = new Furniture(document.getElementById("furnitureName").value, 100, 100, parseInt(document.getElementById("furnitureWidth").value), parseInt(document.getElementById("furnitureHeight").value));
+	var newItem = new Furniture(document.getElementById("furnitureName").value, 100, 100, feetToPixels(parseInt(document.getElementById("furnitureWidth").value)), feetToPixels(parseInt(document.getElementById("furnitureHeight").value)));
 	canvas.add(newItem.furniture);
 }
 
