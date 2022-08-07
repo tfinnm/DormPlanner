@@ -170,7 +170,7 @@ canvas.on({
 
 //for adding new pieces of furniture from the GUI
 function newFurniture() {
-	var newItem = new Furniture(document.getElementById('furnitureName').value, 100, 100, feetToPixels(parseInt(document.getElementById('furnitureWidth').value)), feetToPixels(parseInt(document.getElementById('furnitureHeight').value)), document.getElementById('furnitureColor').value);
+	var newItem = new Furniture(document.getElementById('furnitureName').value, 100, 100, feetToPixels(parseFloat(document.getElementById('furnitureWidth').value)), feetToPixels(parseFloat(document.getElementById('furnitureHeight').value)), document.getElementById('furnitureColor').value);
 	canvas.add(newItem.furniture);
 	send();
 }
