@@ -98,8 +98,12 @@ canvas.height = window.innerHeight*0.97;
 		furnitureArr.push(this);
 	}
 
-var table = new Furniture('table', 200, 200, 100, 100);
-var bed = new Furniture('item', 100, 100, 25, 25)
+//delete the actively selected object when the delete key is pressed
+function deleteSelected() {
+	canvas.remove(canvas.getActiveObject())
+	canvas.renderAll()
+	console.log("triggered correctly")
+}
 
 //draw all the added furniture
 furnitureArr.forEach(item => {
@@ -119,6 +123,12 @@ canvas.on({
 	'object:moving' : onChange,
 	'mouse:move' : mouseUpdater
 });
+
+//for adding new pieces of furniture from the GUI
+function newFurniture() {
+	var newItem = new Furniture(document.getElementById("furnitureName").value, 100, 100, parseInt(document.getElementById("furnitureWidth").value), parseInt(document.getElementById("furnitureHeight").value));
+	canvas.add(newItem.furniture);
+}
 
 function mouseUpdater(options) {
 	mouseData.prevX = mouseData.currentX;
@@ -181,5 +191,15 @@ function send() {
 	ajax.send('data='+JSON.stringify(canvas));
 }
 </script>
+
+<label>width:</label>
+<input type="text" id="furnitureWidth">
+<label>height:</label>
+<input type="text" id="furnitureHeight">
+<label>name:</label>
+<input type="text" id="furnitureName">
+<button type = "button" onclick="newFurniture()"> create new furniture</button>
+<button type = "button" onclick="deleteSelected()"> delete selected object</button>
+
 
 </html>
