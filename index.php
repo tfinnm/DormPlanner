@@ -7,13 +7,27 @@
 <script src="libraries/bootstrap-3.4.1-dist/js/bootstrap.min.js"></script>
 <script src="libraries/dialogs/js/bootstrap-dialog.min.js"></script>
 <link rel="stylesheet" href="libraries/dialogs/css/bootstrap-dialog.min.css">
-<center><canvas id="c" width="500" height="500">Browser Not Supported</canvas></center>
-<script>
-//This is where we set the canvas to the full window
-var canvas = document.getElementById("c");
-canvas.width  = window.innerWidth*0.98;
-canvas.height = window.innerHeight*0.97;
-</script>
+<title>DormDesigner</title>
+
+<?php
+	if (isset($_GET["room"])) {
+		echo "
+			<div class='container'>    
+				<div class='row'>
+					<div class='col-sm-6'>
+						<div class='panel panel-primary'>
+							<div class='panel-heading'>Room: [Hall, Room #]</div>
+							<div class='panel-body'><center><canvas id=\"c\" width="760" height="760">Browser Not Supported</canvas></center></div>
+							<div class='panel-footer'>Powered By Fabric.js</div>
+						</div>
+					</div>
+				</row>
+			</div>
+		";
+	} else {
+
+	}
+?>
 
 <script>
 	var canvas = new fabric.Canvas('c');
@@ -24,9 +38,9 @@ canvas.height = window.innerHeight*0.97;
 	
 	var points = [
 		{x: 10, y: 10},
-		{x: 10, y: 385},
-		{x: 385, y: 385},
-		{x: 385, y: 10},
+		{x: 10, y: 780},
+		{x: 780, y: 780},
+		{x: 780, y: 10},
 		]
 
 
