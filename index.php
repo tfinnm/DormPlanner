@@ -12,24 +12,46 @@
 <?php
 	if (isset($_GET["room"])) {
 		echo "
-			<div class='container'>    
+			<style>
+				canvas {
+					width: 100%;
+					height: auto;
+				}
+			</style>
 				<div class='row'>
+					<div class='col-sm-6' style='outline:solid black;'>
+						<canvas id='c' height='700' width='700'>Browser Not Supported</canvas>
+					</div>
 					<div class='col-sm-6'>
-						<div class='panel panel-primary'>
-							<div class='panel-heading'>Room: [Hall, Room #]</div>
-							<div class='panel-body'><center><canvas id=\"c\" width="760" height="760">Browser Not Supported</canvas></center></div>
-							<div class='panel-footer'>Powered By Fabric.js</div>
-						</div>
+						<center>
+						<h1>DormDesigner</h1>
+						<h4>Editing: RPI Crockett 116 | Room Code: <a href='#?room=".$_GET["room"]."'>".$_GET["room"]."</a></h4>
+						
+						
+						</center>
+						Tools: <button type = 'button' onclick='deleteSelected()'> delete selected object</button>
+						<hr>
+						<h5>Furniture Library</h5>
+						<button type = 'button' onclick='newFurnitureLib(\"TwinXL\", 3,6.667,\"red\")'>Twin XL Bed</button>
+						<button type = 'button' onclick='newFurnitureLib(\"Desk\", 4,2,\"red\")'>Desk</button>
+						<button type = 'button' onclick='newFurnitureLib(\"Fridge\", 2,2,\"red\")'>Minifridge</button>
+						<hr>
+						<h5>Custom Furniture</h5>
+						<h6><i>Width and Heights are in feet</i></h6>
+						<label>width:</label>
+						<input type='text' id='furnitureWidth'><br>
+						<label>height:</label>
+						<input type='text' id='furnitureHeight'><br>
+						<label>name:</label>
+						<input type='text' id='furnitureName'><br>
+						<label>color:</label>
+						<input type='text' id='furnitureColor'><br>
+						<button type = 'button' onclick='newFurniture()'> create new furniture</button>
 					</div>
 				</row>
-			</div>
-		";
-	} else {
+				<script>
 
-	}
-?>
 
-<script>
 	var canvas = new fabric.Canvas('c');
 
 	//setting up a way to get the previous position of a fabric object (previous frame)
@@ -37,10 +59,10 @@
 	fabric.Object.prototype.prevY = 0;
 	
 	var points = [
-		{x: 10, y: 10},
-		{x: 10, y: 780},
-		{x: 780, y: 780},
-		{x: 780, y: 10},
+		{x: 2.5, y: 2.5},
+		{x: 2.5, y: 17.5},
+		{x: 17.5, y: 17.5},
+		{x: 17.5, y: 2.5},
 		]
 
 
@@ -48,8 +70,8 @@
 	function makeRoom(points) {
 
 		for(let i = 0; i < points.length; i++) {
-			points[i].x = feetToPixels(points[i.x]);
-			points[i].y = feetToPixels(points[i.y]);
+			points[i].x = feetToPixels(points[i].x);
+			points[i].y = feetToPixels(points[i].y);
 		}
 		
 		var roomRects = [];
@@ -87,9 +109,9 @@
 	var room = makeRoom(points);
 
 	var furnitureArr = [];
-	function Furniture(label, x, y, width, height) {
+	function Furniture(label, x, y, width, height, color) {
 		this.shape = new fabric.Rect({
-			fill: 'red',
+			fill: color,
 			width: width,
 			height: height,
 			originX: 'left',
@@ -118,12 +140,12 @@
 function deleteSelected() {
 	canvas.remove(canvas.getActiveObject());
 	canvas.renderAll();
-	console.log("triggered correctly");
+	send();
 }
 
 //converting feet to pixel values
 function feetToPixels(feet) {
-	return Math.floor(feet*37)
+	return Math.floor(feet*35)
 }
 
 //draw all the added furniture
@@ -142,13 +164,21 @@ var mouseData = {prevX:0,prevY0:0, currentX:0, currentY:0, velocityX:0, velocity
 //code to check for changes, can add more situations in which to call the onChange function
 canvas.on({
 	'object:moving' : onChange,
+	'object:rotating' : onChange,	
 	'mouse:move' : mouseUpdater
 });
 
 //for adding new pieces of furniture from the GUI
 function newFurniture() {
-	var newItem = new Furniture(document.getElementById("furnitureName").value, 100, 100, feetToPixels(parseInt(document.getElementById("furnitureWidth").value)), feetToPixels(parseInt(document.getElementById("furnitureHeight").value)));
+	var newItem = new Furniture(document.getElementById('furnitureName').value, 100, 100, feetToPixels(parseInt(document.getElementById('furnitureWidth').value)), feetToPixels(parseInt(document.getElementById('furnitureHeight').value)), document.getElementById('furnitureColor').value);
 	canvas.add(newItem.furniture);
+	send();
+}
+
+function newFurnitureLib(name, width, height, color) {
+	var newItem = new Furniture(name, 100, 100, feetToPixels(width), feetToPixels(height), color);
+	canvas.add(newItem.furniture);
+	send();
 }
 
 function mouseUpdater(options) {
@@ -194,33 +224,94 @@ canvas.renderAll();
 
 //update
 if(typeof(EventSource) !== 'undefined') {
-	var source = new EventSource('back/check4update.php?room=<?php echo "TEST" ?>');
+	var source = new EventSource('back/check4update.php?room=".$_GET["room"]."');
 	source.onmessage = function(event) {
 		var ajax = new XMLHttpRequest();
-		ajax.open('POST', 'back/getupdate.php?room=<?php echo "TEST" ?>');
+		ajax.open('POST', 'back/getupdate.php?room=".$_GET["room"]."');
 		ajax.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+		ajax.onreadystatechange = function() {
+			if (ajax.readyState === 4) {
+				canvas.loadFromJSON(ajax.response);
+				canvas.renderAll();
+			}
+		}
 		ajax.send('data='+JSON.stringify(canvas));
 	};
 } else {
-	alert("Browser Not Supported :(");
+	alert('Browser Not Supported :(');
 }
 
 function send() {
 	var ajax = new XMLHttpRequest();
-	ajax.open('POST', 'back/sendupdate.php?room=<?php echo "TEST" ?>');
+	ajax.open('POST', 'back/sendupdate.php?room=".$_GET["room"]."');
 	ajax.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 	ajax.send('data='+JSON.stringify(canvas));
 }
 </script>
-
-<label>width:</label>
-<input type="text" id="furnitureWidth">
-<label>height:</label>
-<input type="text" id="furnitureHeight">
-<label>name:</label>
-<input type="text" id="furnitureName">
-<button type = "button" onclick="newFurniture()"> create new furniture</button>
-<button type = "button" onclick="deleteSelected()"> delete selected object</button>
-
+		";
+		
+include("./db.php");
+if (!isset($_SESSION["LastData"])) {
+	$_SESSION["LastData"] = "";
+}
+$str = "{}";
+$conn = new mysqli($db_server, $db_user, $db_password, $db_db);
+if ($conn->connect_error) {
+	echo "<script>alert('Failed to connect to database :(');</script>";
+}
+$sql = "SELECT * FROM rooms WHERE RoomCode = '".$_GET["room"]."' LIMIT 1";
+$result = $conn->query($sql);
+if ($result->num_rows > 0) {
+	while($row = $result->fetch_assoc()) {
+		$str = $row["Data"];
+	}
+}
+$_SESSION["LastData"] = $str;
+echo "
+<script>
+canvas.loadFromJSON('".$str."');
+canvas.renderAll();
+</script>
+";
+	} else {
+		include("./db.php");
+		$schools = "";
+		$conn = new mysqli($db_server, $db_user, $db_password, $db_db);
+		$sql = "SELECT School FROM floorplans GROUP BY School;";
+		$result = $conn->query($sql);
+		if ($result->num_rows > 0) {
+			while($row = $result->fetch_assoc()) {
+				$schools.="<option value='".$row["School"]."'>".$row["School"]."</option>";
+			}
+		}
+$conn->close();
+		echo "
+	<center>
+		<h1>DormDesigner</h1>
+		<h4>Enter your Room Code here:</h4>
+		<form action='' method='get'>
+		<label>Room Code: </label> <input type='test' id='room' name='room'></input><input type='submit' value='Join'></input>
+		</form>
+		<h4>Or create a new room:</h4>
+		<form action='' method='post'> 
+			<select name='School' onchange='showCustomer(this.value)'>
+				<option value=''>Select a School:</option>
+				".$schools."
+			</select>
+			<select disabled name='School' onchange='showCustomer(this.value)'>
+			<option value=''>Select a Building:</option>
+			</select>
+			<select disabled name='School' onchange='showCustomer(this.value)'>
+			<option value=''>Select a Floor:</option>
+			</select>
+			<select disabled name='School' onchange='showCustomer(this.value)'>
+			<option value=''>Select a Room:</option>
+			</select>
+			<input type='submit' value='create'></input>
+		</form>
+	</center>
+		";
+	}
+?>
 
 </html>

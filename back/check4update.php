@@ -16,6 +16,7 @@ $conn = new mysqli($db_server, $db_user, $db_password, $db_db);
 			while($row = $result->fetch_assoc()) {
 				if ($row["Data"] != $_SESSION["LastData"]) {
 					echo "data: " . uniqid() . " \n\n";
+					ob_end_flush();
 					flush();
 				}
 			}
