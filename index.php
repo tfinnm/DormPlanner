@@ -70,32 +70,41 @@ canvas.height = window.innerHeight*0.97;
 
 	var room = makeRoom(points);
 
-	// var room = new fabric.Polygon(points, {
-	// 	left: 100,
-	// 	top: 50,
-	// 	fill: 'white',
-	// 	strokeWidth: 10,
-	// 	stroke: 'black',
-	// });
+	var furnitureArr = [];
+	function Furniture(label, x, y, width, height) {
+		this.shape = new fabric.Rect({
+			fill: 'red',
+			width: width,
+			height: height,
+			originX: 'left',
+			originY: 'top'
+		});
+		
+		this.text = new fabric.Text(label, {fontSize:20, originX: 'left', originY:'top'})
 
-var rectangle = new fabric.Rect({
-	stroke: 'black', 
-	strokeWidth: 10,
-	fill: 'white',
-	originX: 'center',
-	originY: 'center',
-	opacity: 1,
-	left: 100,
-	top: 100,
-	height: 20,
-	width: 20
-});
+		this.furniture = new fabric.Group([this.shape, this.text], {left:x, top:y})
 
+		this.furniture.setControlsVisibility({
+			mt: false,
+			mb: false,
+			ml: false,
+			mr: false,
+			bl: false,
+			tl: false,
+			br: false,
+			tr: false
+		});
 
+		furnitureArr.push(this);
+	}
 
+var table = new Furniture('table', 200, 200, 100, 100);
+var bed = new Furniture('item', 100, 100, 25, 25)
 
-
-canvas.add(rectangle);
+//draw all the added furniture
+furnitureArr.forEach(item => {
+	canvas.add(item.furniture);
+})
 
 //the room is an array of rectangles, so we have to loop through and render them all
 room.forEach(wall => {
